@@ -9,9 +9,11 @@ import matplotlib.pyplot as plt
 def buildClassifier(training,num_features):
     spam_count = np.sum(training[:,1] == "1")
     no_spam_count = np.sum(training[:,1] == "-1")
-
+    #feature_false_table, contains probabilites that specific email features are false, given either spam or not spam
+    #feature_true_table, contains probabilities that specific email features are true, given either spam or not spam
     feature_true_table =  np.zeros((2,num_features),dtype = float)
     feature_false_table = np.zeros((2,num_features),dtype = float)
+
     for feature_iterator in range(num_features):
         feature_false_spam = 0
         feature_true_spam = 0
@@ -176,29 +178,57 @@ def start():
         recall_array = np.append(recall_array,recall)
         TPR_array = np.append(TPR_array,true_positive_rate)
         FPR_array = np.append(FPR_array,false_positive_rate)
+        print("For Loop Runs 21 Times")
+    #adding the accuracy recall and precision of the 80-20 paritition of the entire dataset
+    true_table_entire,false_table_entire = buildClassifier(entire_training,334)
+    acc,prec,rec,true_pos_rate,false_pos_rate = Classify(entire_testing,true_table_entire,false_table_entire)
+
+    accuracy_array = np.append(accuracy_array,acc)
+    precision_array = np.append(precision_array,prec)
+    recall_array = np.append(recall_array,rec)
+    TPR_array = np.append(TPR_array,true_pos_rate)
+    FPR_array = np.append(FPR_array,false_pos_rate)
+    
+    num_training = np.shape(entire_training)[0]
+    training_partition_sizes = np.append(training_partition_sizes,num_training)
+    model_numbers = np.arange(1,22,1)
+
+
     #graphs Precision vs Recall for different training-testing partitions
     plt.figure(1)
     plt.title("ROC Curve For Models")
     plt.xlabel("Recall")   
     plt.ylabel("Precision")
-    plt.plot(recall_array,precision_array)
+    plt.xlim((0,1))
+    plt.ylim((0,1))
     plt.scatter(recall_array,precision_array)
+    #annotates the points on the plot with model number
+    for i in range(len(model_numbers)):
+        plt.annotate(str(model_numbers[i]),(recall_array[i],precision_array[i]))
+    
+
 
     #graphs False Positive Rate vs True Positive Rate for different training-testing partitions
     plt.figure(2)
     plt.title("ROC Curve For Models")
     plt.xlabel("1-Specificity(False Positive Rate)")   
     plt.ylabel("Sensitivity(True Positive Rate")
-    plt.plot(FPR_array,TPR_array)
+    plt.xlim((0,1))
+    plt.ylim((0,1))
     plt.scatter(FPR_array,TPR_array)
+    #annotates points on the plot with model number
+    for i in range(len(model_numbers)):
+        plt.annotate(str(model_numbers[i]),(FPR_array[i],TPR_array[i]))
+
 
     #graphs Accuracies vs different training-testing partition sizes
     plt.figure(3)
     plt.title("Accuracy For Different Training Partition Sizes")
     plt.xlabel("Training Partition Sizes")
     plt.ylabel("Accuracy")
-    plt.plot(training_partition_sizes,accuracy_array)
     plt.scatter(training_partition_sizes,accuracy_array)
+    plt.plot(training_partition_sizes,accuracy_array)
+
     plt.show()
 
 
